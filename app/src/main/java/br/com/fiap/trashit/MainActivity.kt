@@ -127,16 +127,17 @@ class MainActivity : ComponentActivity() {
                     }
 
                     val usuarioRepository = UsuarioRepository(applicationContext)
-                    val isLogged = if(usuarioRepository
+                    /*val isLogged = if(usuarioRepository
                         .listarUsuariosEndereco(1)
                         .isEmpty()) {
                             false
                     } else {
                         usuarioRepository.buscarUsuarioPorId(1).isLogged
-                    }
+                    }*/
 
-                    val startDestination = if(isLogged) BottomNavItem.Lixeira.screenRoute
-                        else "login"
+                    val startDestination = "login"
+                        /*if(isLogged) BottomNavItem.Lixeira.screenRoute
+                        else "login"*/
 
                     val navController = rememberNavController()
                     var showBottomBar by rememberSaveable {

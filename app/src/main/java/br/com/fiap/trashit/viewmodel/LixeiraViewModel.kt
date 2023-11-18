@@ -48,33 +48,32 @@ class LixeiraViewModel(val context: Context): ViewModel() {
     val uiState: StateFlow<LixeiraUiState>
         get() = _uiState
 
-    /*var temPlastico by mutableStateOf(endereco.value.lixeira.temPlastico)
-    var temPapel by mutableStateOf(endereco.value.lixeira.temPapel)
-    var temMetal by mutableStateOf(endereco.value.lixeira.temMetal)
-    var temVidro by mutableStateOf(endereco.value.lixeira.temVidro)
-    var temOrganico by mutableStateOf(endereco.value.lixeira.temOrganico)
-    var precisaColeta by mutableStateOf(endereco.value.lixeira.precisaColeta)*/
-
-
-
     fun alterarLixeira(toastText: String): Unit {
         GlobalScope.launch{
             val enderecoAtt = _endereco.value.copy(
                 lixeira = Lixeira(
-                    precisaColeta = (uiState.value.precisaColeta).not(),
+                    precisaColeta = if (!(
+                        uiState.value.temPlastico ||
+                        uiState.value.temPapel ||
+                        uiState.value.temMetal ||
+                        uiState.value.temVidro ||
+                        uiState.value.temOrganico)
+                    ) false
+                    else (uiState.value.precisaColeta).not(),
+
                     temPlastico = uiState.value.temPlastico,
                     temPapel = uiState.value.temPapel,
                     temMetal = uiState.value.temMetal,
                     temVidro = uiState.value.temVidro,
                     temOrganico = uiState.value.temOrganico
                 ))
-            if (
+            /*if (
                 uiState.value.temPlastico ||
                 uiState.value.temPapel ||
                 uiState.value.temMetal ||
                 uiState.value.temVidro ||
                 uiState.value.temOrganico
-            ) {
+            ) {*/
                 val call4:Call<EnderecoAPI> = RetrofitFactory()
                     .getTrashItService().updateEndereco(id = 1, endereco = enderecoAtt )
                 call4.enqueue(object : Callback<EnderecoAPI>{
@@ -97,7 +96,7 @@ class LixeiraViewModel(val context: Context): ViewModel() {
 
                 })
                 //trashItToast(text = toastText, context = context)
-            }
+        //    }
             //trashItToast(text = "Sua lixeira já está vazia", context = context)
 
         }
@@ -132,7 +131,13 @@ class LixeiraViewModel(val context: Context): ViewModel() {
     fun realizarColeta():Unit {
         GlobalScope.launch {
             //delay(3000)
-            if (_uiState.value.precisaColeta){
+            if (_uiState.value.precisaColeta &&
+                        ( uiState.value.temPlastico ||
+                        uiState.value.temPapel ||
+                        uiState.value.temMetal ||
+                        uiState.value.temVidro ||
+                        uiState.value.temOrganico
+                )){
                 val coleta = ColetaAPI(
                     id = 0,
                     lixeira = _endereco.value.lixeira

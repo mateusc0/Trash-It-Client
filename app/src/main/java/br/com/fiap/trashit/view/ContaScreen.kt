@@ -274,7 +274,6 @@ fun ContaScreen(viewModel: ContaViewModel, navController: NavController) {
                                 color = colorResource(id = R.color.trashIt_green),
                                 modifier = Modifier.width(140.dp)
                         ) {
-                                viewModel.logout()
                                 navController.navigate("login")
                         }
                 }

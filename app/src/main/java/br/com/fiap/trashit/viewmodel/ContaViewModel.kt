@@ -78,15 +78,11 @@ class ContaViewModel(val context: Context): ViewModel() {
         }
 
     }
-    fun logout():Unit {
-        _usuario.update { currentState ->
-            currentState.copy(
-                //isLogged = false
-            )
-        }
+    /*fun logout():Unit {
+
         RetrofitFactory().getTrashItService().updateUsuario(_usuario.value.id,
             _usuario.value).execute().body()!!
-    }
+    }*/
 
     /*_usuario.value != RetrofitFactory().getTrashItService().getUsuarioById(1)
     .execute().body()!!*/

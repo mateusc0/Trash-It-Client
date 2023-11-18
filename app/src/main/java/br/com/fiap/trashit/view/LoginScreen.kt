@@ -36,11 +36,14 @@ import androidx.navigation.NavController
 import br.com.fiap.trashit.R
 import br.com.fiap.trashit.view.components.UserInputTextField
 import br.com.fiap.trashit.viewmodel.LoginViewModel
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
-@SuppressLint("SuspiciousIndentation")
+@SuppressLint("SuspiciousIndentation", "CoroutineCreationDuringComposition")
 @Composable
 fun LoginScreen(context: Context,viewModel: LoginViewModel, navController: NavController) {
     val conta by viewModel.usuario.collectAsState()
+    GlobalScope.launch { viewModel.refreshView() }
         Column(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -98,7 +101,7 @@ fun LoginScreen(context: Context,viewModel: LoginViewModel, navController: NavCo
                     .padding(top = 5.dp, start = 45.dp)
             )
             Spacer(modifier = Modifier.height(50.dp))
-            LoginButton(navController = navController, onCheckedFunction = viewModel::login)
+            LoginButton(navController = navController, onCheckedFunction = {})
             Spacer(modifier = Modifier.height(50.dp))
             Text(
                 text = "TrashIt Company",
