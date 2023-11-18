@@ -43,7 +43,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun LixeiraScreen(viewModel: LixeiraViewModel, navController: NavController) {
     val uiState by viewModel.uiState.collectAsState()
-
+    if (viewModel.endereco.value.id == 0L) { viewModel.refreshView() }
     val alert: String
     val buttonText: String
     val buttomColor: Int

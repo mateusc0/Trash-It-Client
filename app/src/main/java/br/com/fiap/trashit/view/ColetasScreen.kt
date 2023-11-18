@@ -1,5 +1,6 @@
 package br.com.fiap.trashit.view
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -37,14 +38,18 @@ import br.com.fiap.trashit.R
 import br.com.fiap.trashit.model.Lixeira
 import br.com.fiap.trashit.view.components.ScreenLabel
 import br.com.fiap.trashit.viewmodel.ColetasViewModel
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 
+@SuppressLint("CoroutineCreationDuringComposition")
 @Composable
 fun ColetasScreen(viewModel: ColetasViewModel, navController: NavController) {
         val listaColetas by viewModel.listaColetas.collectAsState()
         val simpleDateFormat: SimpleDateFormat = SimpleDateFormat("dd/MM/yyyy")
         val simpleTimeFormat: SimpleDateFormat = SimpleDateFormat("HH:mm")
+        if (viewModel.refreshed == false) { GlobalScope.launch{viewModel.refreshView() }}
 
         Box(modifier = Modifier
                 .fillMaxSize()

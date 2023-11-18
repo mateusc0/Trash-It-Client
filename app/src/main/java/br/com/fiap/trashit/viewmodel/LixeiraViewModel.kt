@@ -10,21 +10,21 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.ViewModel
 import br.com.fiap.trashit.R
-import br.com.fiap.trashit.model.Coleta
 import br.com.fiap.trashit.model.ColetaAPI
-import br.com.fiap.trashit.model.Endereco
 import br.com.fiap.trashit.model.EnderecoAPI
 import br.com.fiap.trashit.model.Lixeira
-import br.com.fiap.trashit.model.Usuario
 import br.com.fiap.trashit.model.UsuarioAPI
 import br.com.fiap.trashit.service.database.repository.ColetaRepository
 import br.com.fiap.trashit.service.database.repository.EnderecoRepository
 import br.com.fiap.trashit.service.trashItService.RetrofitFactory
 import br.com.fiap.trashit.view.components.trashItToast
 import br.com.fiap.trashit.viewmodel.uiState.LixeiraUiState
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -32,9 +32,9 @@ import retrofit2.Response
 class LixeiraViewModel(val context: Context): ViewModel() {
     private val enderecoRepository = EnderecoRepository(context)
     private val coletaRepository = ColetaRepository(context)
-    private var _endereco = MutableStateFlow<Endereco>(enderecoRepository.buscarEnderecoPorId(1))
+    private var _endereco = MutableStateFlow<EnderecoAPI>(EnderecoAPI())
 
-    val endereco: StateFlow<Endereco>
+    val endereco: StateFlow<EnderecoAPI>
         get() = _endereco
 
     private val _uiState = MutableStateFlow<LixeiraUiState>(LixeiraUiState(
@@ -58,60 +58,49 @@ class LixeiraViewModel(val context: Context): ViewModel() {
 
 
     fun alterarLixeira(toastText: String): Unit {
-
-
-        val enderecoAtt = _endereco.value.copy(
-            lixeira = Lixeira(
-            precisaColeta = (uiState.value.precisaColeta).not(),
-            temPlastico = uiState.value.temPlastico,
-            temPapel = uiState.value.temPapel,
-            temMetal = uiState.value.temMetal,
-            temVidro = uiState.value.temVidro,
-            temOrganico = uiState.value.temOrganico
-
-        ))
-
-
-           /* Endereco(
-            id = endereco.value.id,
-            numero = endereco.value.numero,
-            complemento = endereco.value.complemento,
-            bairro = endereco.value.bairro,
-            cep = endereco.value.cep,
-            rua = endereco.value.rua,
-            cidade = endereco.value.cidade,
-            uf = endereco.value.uf,
-            lixeira = Lixeira(
-                precisaColeta = (uiState.value.precisaColeta).not(),
-                temPlastico = uiState.value.temPlastico,
-                temPapel = uiState.value.temPapel,
-                temMetal = uiState.value.temMetal,
-                temVidro = uiState.value.temVidro,
-                temOrganico = uiState.value.temOrganico
-            ))*/
-        if (
-            uiState.value.temPlastico ||
-            uiState.value.temPapel ||
-            uiState.value.temMetal ||
-            uiState.value.temVidro ||
-            uiState.value.temOrganico
+        GlobalScope.launch{
+            val enderecoAtt = _endereco.value.copy(
+                lixeira = Lixeira(
+                    precisaColeta = (uiState.value.precisaColeta).not(),
+                    temPlastico = uiState.value.temPlastico,
+                    temPapel = uiState.value.temPapel,
+                    temMetal = uiState.value.temMetal,
+                    temVidro = uiState.value.temVidro,
+                    temOrganico = uiState.value.temOrganico
+                ))
+            if (
+                uiState.value.temPlastico ||
+                uiState.value.temPapel ||
+                uiState.value.temMetal ||
+                uiState.value.temVidro ||
+                uiState.value.temOrganico
             ) {
-            enderecoRepository.atualizar(enderecoAtt)
-            _endereco.update {
-                enderecoRepository.buscarEnderecoPorId(1) }
+                val call4:Call<EnderecoAPI> = RetrofitFactory()
+                    .getTrashItService().updateEndereco(id = 1, endereco = enderecoAtt )
+                call4.enqueue(object : Callback<EnderecoAPI>{
+                    override fun onResponse(call: Call<EnderecoAPI>, response: Response<EnderecoAPI>) {
+                        Log.d("TESTE API ENDERECO", "onResponse: ${response.body()}")
+                        _endereco.update { response.body()!! }
+                        _uiState.update { LixeiraUiState(
+                            temPlastico = _endereco.value.lixeira.temPlastico,
+                            temPapel = _endereco.value.lixeira.temPapel,
+                            temMetal = _endereco.value.lixeira.temMetal,
+                            temVidro = _endereco.value.lixeira.temVidro,
+                            temOrganico = _endereco.value.lixeira.temOrganico,
+                            precisaColeta = _endereco.value.lixeira.precisaColeta
+                        ) }
+                    }
 
-            _uiState.update { LixeiraUiState(
-                temPlastico = _endereco.value.lixeira.temPlastico,
-                temPapel = _endereco.value.lixeira.temPapel,
-                temMetal = _endereco.value.lixeira.temMetal,
-                temVidro = _endereco.value.lixeira.temVidro,
-                temOrganico = _endereco.value.lixeira.temOrganico,
-                precisaColeta = _endereco.value.lixeira.precisaColeta
-            ) }
-            trashItToast(text = toastText, context = context)
+                    override fun onFailure(call: Call<EnderecoAPI>, t: Throwable) {
+                        Log.d("TESTE API ENDERECO", "onResponse: ${t.message}")
+                    }
+
+                })
+                //trashItToast(text = toastText, context = context)
+            }
+            //trashItToast(text = "Sua lixeira já está vazia", context = context)
+
         }
-        trashItToast(text = "Sua lixeira já está vazia", context = context)
-
     }
 
     fun updateTemPlastico(value: Boolean):Unit {
@@ -141,27 +130,48 @@ class LixeiraViewModel(val context: Context): ViewModel() {
     }
 
     fun realizarColeta():Unit {
-        if (_uiState.value.precisaColeta){
-            val coleta = Coleta(
-                id = 0,
-                idEnderecoDono = _endereco.value.id,
-                lixeira = _endereco.value.lixeira
-            )
-            coletaRepository.salvar(coleta)
-            enderecoRepository.atualizar(
-                _endereco.value.copy(lixeira = Lixeira())
-            )
+        GlobalScope.launch {
+            //delay(3000)
+            if (_uiState.value.precisaColeta){
+                val coleta = ColetaAPI(
+                    id = 0,
+                    lixeira = _endereco.value.lixeira
+                )
+                val callColeta:Call<ColetaAPI> = RetrofitFactory()
+                    .getTrashItService().saveColeta(idEndereco = 1, coleta = coleta)
+                val callEndereco:Call<EnderecoAPI> = RetrofitFactory()
+                    .getTrashItService()
+                    .updateEndereco(id = 1, endereco = _endereco.value.copy(lixeira = Lixeira()))
+                callColeta.enqueue(object : Callback<ColetaAPI>{
+                    override fun onResponse(call: Call<ColetaAPI>, response: Response<ColetaAPI>) {
+                        Log.d("TESTE COLETA API", "onResponse: ${response.body()}")
+                    }
 
-            _endereco.update { enderecoRepository.buscarEnderecoPorId(_endereco.value.id) }
-            _uiState.update { LixeiraUiState(
-                temPlastico = _endereco.value.lixeira.temPlastico,
-                temPapel = _endereco.value.lixeira.temPapel,
-                temMetal = _endereco.value.lixeira.temMetal,
-                temVidro = _endereco.value.lixeira.temVidro,
-                temOrganico = _endereco.value.lixeira.temOrganico,
-                precisaColeta = _endereco.value.lixeira.precisaColeta
-            )}
-            makeNotification()
+                    override fun onFailure(call: Call<ColetaAPI>, t: Throwable) {
+                        Log.d("TESTE COLETA API", "onResponse: ${t.message}")
+                    }
+
+                })
+                callEndereco.enqueue(object : Callback<EnderecoAPI>{
+                    override fun onResponse(call: Call<EnderecoAPI>, response: Response<EnderecoAPI>) {
+                        Log.d("TESTE API ENDERECO", "onResponse: ${response.body()}")
+                        _endereco.update { response.body()!! }
+                        _uiState.update { LixeiraUiState(
+                            temPlastico = _endereco.value.lixeira.temPlastico,
+                            temPapel = _endereco.value.lixeira.temPapel,
+                            temMetal = _endereco.value.lixeira.temMetal,
+                            temVidro = _endereco.value.lixeira.temVidro,
+                            temOrganico = _endereco.value.lixeira.temOrganico,
+                            precisaColeta = _endereco.value.lixeira.precisaColeta
+                        )}
+                    }
+
+                    override fun onFailure(call: Call<EnderecoAPI>, t: Throwable) {
+                        Log.d("TESTE API ENDERECO", "onResponse: ${t.message}")
+                    }
+                })
+                makeNotification()
+            }
         }
         val coleta: ColetaAPI = ColetaAPI(id = 2, lixeira = _endereco.value.lixeira)
         val lixeira2:Lixeira =  Lixeira(temOrganico = true, temMetal = true)
@@ -317,7 +327,26 @@ class LixeiraViewModel(val context: Context): ViewModel() {
 
     }
 
+    fun refreshView() {
+        val callEndereco:Call<EnderecoAPI> = RetrofitFactory()
+            .getTrashItService().getEnderecoById(1)
+        callEndereco.enqueue(object : Callback<EnderecoAPI> {
+            override fun onResponse(call: Call<EnderecoAPI>, response: Response<EnderecoAPI>) {
+                _endereco.update { response.body()!! }
+                _uiState.update { LixeiraUiState(
+                    temPlastico = _endereco.value.lixeira.temPlastico,
+                    temPapel = _endereco.value.lixeira.temPapel,
+                    temMetal = _endereco.value.lixeira.temMetal,
+                    temVidro = _endereco.value.lixeira.temVidro,
+                    temOrganico = _endereco.value.lixeira.temOrganico,
+                    precisaColeta = _endereco.value.lixeira.precisaColeta
+                )}
+            }
 
+            override fun onFailure(call: Call<EnderecoAPI>, t: Throwable) {
+                Log.d("TESTE API", "onResponse: ${t.message}")
+            }
 
-
+        })
+    }
 }

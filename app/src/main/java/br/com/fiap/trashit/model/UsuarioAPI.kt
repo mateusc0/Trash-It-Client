@@ -6,10 +6,10 @@ import androidx.room.PrimaryKey
 
 @Entity( tableName = "tbl_usuario")
 data class UsuarioAPI(
-    val id: Long,
-    val nomeCompleto: String,
-    val cpf: String,
-    val email: String,
-    val celular: String,
-    val senha: String,
+    val id: Long = 0,
+    val nomeCompleto: String = "",
+    val cpf: String = "",
+    val email: String = "",
+    val celular: String = "",
+    val senha: String = "",
 )

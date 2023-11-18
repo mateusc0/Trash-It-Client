@@ -1,5 +1,6 @@
 package br.com.fiap.trashit.view
 
+import android.annotation.SuppressLint
 import android.telephony.PhoneNumberUtils
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -30,6 +31,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -53,10 +55,14 @@ import br.com.fiap.trashit.R
 import br.com.fiap.trashit.view.components.ScreenLabel
 import br.com.fiap.trashit.view.components.UserInputTextField
 import br.com.fiap.trashit.viewmodel.ContaViewModel
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.util.Locale
 
+@SuppressLint("StateFlowValueCalledInComposition", "CoroutineCreationDuringComposition")
 @Composable
 fun ContaScreen(viewModel: ContaViewModel, navController: NavController) {
+        if (viewModel.usuario.value.id == 0L) {GlobalScope.launch{ viewModel.refreshView() }}
         val conta by viewModel.usuario.collectAsState()
         val endereco by viewModel.endereco.collectAsState()
         val emailError by viewModel.emailError.collectAsState()
@@ -260,7 +266,6 @@ fun ContaScreen(viewModel: ContaViewModel, navController: NavController) {
                                 color = colorResource(id = R.color.trashIt_green),
                                 modifier = Modifier.width(140.dp)
                         ) {
-
                                 viewModel.updateUsuario()
                         }
                         Spacer(modifier = Modifier.width(20.dp))

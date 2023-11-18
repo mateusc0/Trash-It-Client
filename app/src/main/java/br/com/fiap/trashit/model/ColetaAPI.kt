@@ -10,7 +10,7 @@ import java.util.Date
 
 @Entity(tableName = "tbl_coleta")
 data class ColetaAPI (
-    val id: Long,
+    val id: Long = 0,
     val dtColeta: Date = Timestamp.from(Instant.now()),
-    val lixeira: Lixeira
+    val lixeira: Lixeira = Lixeira()
 )

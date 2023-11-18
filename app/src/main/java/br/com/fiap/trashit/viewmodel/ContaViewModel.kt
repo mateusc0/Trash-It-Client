@@ -1,31 +1,41 @@
 package br.com.fiap.trashit.viewmodel
 
 import android.content.Context
+import android.util.Log
 import android.util.Patterns
-import android.widget.Toast
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
-import br.com.fiap.trashit.model.Endereco
-import br.com.fiap.trashit.model.Usuario
+import br.com.fiap.trashit.model.EnderecoAPI
+import br.com.fiap.trashit.model.UsuarioAPI
 import br.com.fiap.trashit.service.database.repository.EnderecoRepository
 import br.com.fiap.trashit.service.database.repository.UsuarioRepository
+import br.com.fiap.trashit.service.trashItService.RetrofitFactory
 import br.com.fiap.trashit.view.components.trashItToast
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
-import java.util.regex.Pattern
+import kotlinx.coroutines.launch
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class ContaViewModel(val context: Context): ViewModel() {
+
     val emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\$".toRegex()
     private val enderecoRepository = EnderecoRepository(context)
     private val usuarioRepository = UsuarioRepository(context)
 
-    private var _usuario = MutableStateFlow<Usuario>(usuarioRepository.buscarUsuarioPorId(1))
-    val usuario: StateFlow<Usuario>
+    private var _usuario = MutableStateFlow<UsuarioAPI>(
+        UsuarioAPI()
+    )
+
+    val usuario: StateFlow<UsuarioAPI>
         get() = _usuario
 
-    private var _endereco = MutableStateFlow<Endereco>(enderecoRepository.buscarEnderecoPorId(1))
-    val endereco: StateFlow<Endereco>
+    private var _endereco = MutableStateFlow<EnderecoAPI>(
+        EnderecoAPI()
+    )
+    val endereco: StateFlow<EnderecoAPI>
         get() = _endereco
 
     private var _emailError = MutableStateFlow<Boolean>(false)
@@ -60,34 +70,55 @@ class ContaViewModel(val context: Context): ViewModel() {
         }
     }
     fun updateSenha(senha: String):Unit {
-        val usuarioBanco = usuarioRepository.buscarUsuarioPorId(1)
-        _usuario.update {
-            usuarioBanco.copy(senha = senha)
+        GlobalScope.launch {
+            _usuario.update {
+                it.copy(senha = senha)
+            }
+            updateUsuario()
         }
-        updateUsuario()
+
     }
     fun logout():Unit {
         _usuario.update { currentState ->
             currentState.copy(
-                isLogged = false
+                //isLogged = false
             )
         }
-        usuarioRepository.atualizar(_usuario.value)
+        RetrofitFactory().getTrashItService().updateUsuario(_usuario.value.id,
+            _usuario.value).execute().body()!!
     }
 
+    /*_usuario.value != RetrofitFactory().getTrashItService().getUsuarioById(1)
+    .execute().body()!!*/
+
     fun updateUsuario():Unit {
-        emailErrorCheck()
-        celularErrorCheck()
-        if (_usuario.value != usuarioRepository.buscarUsuarioPorId(1) && !_emailError.value
-            && !_celularError.value
+        GlobalScope.launch {
+            emailErrorCheck()
+            celularErrorCheck()
+            if ( !_emailError.value
+                && !_celularError.value
             ) {
-                usuarioRepository.atualizar(_usuario.value)
+                RetrofitFactory().getTrashItService().updateUsuario(_usuario.value.id,
+                    _usuario.value).enqueue( object : Callback<UsuarioAPI> {
+                    override fun onResponse(
+                        call: Call<UsuarioAPI>,
+                        response: Response<UsuarioAPI>,
+                    ) {
+                        _usuario.update { response.body()!!}
+                    }
+
+                    override fun onFailure(call: Call<UsuarioAPI>, t: Throwable) {
+                        Log.d("TESTE API", "onResponse: ${t.message}")
+                    }
+
+                })
                 _usuario.update {
-                    usuarioRepository.buscarUsuarioPorId(1)
+                    RetrofitFactory().getTrashItService().getUsuarioById(1).execute().body()!!
                 }
-                trashItToast(text = "Usuário atualizado", context = context)
-        } else {
-            trashItToast(text = "Altere alguma informação", context= context )
+                //trashItToast(text = "Usuário atualizado", context = context)
+            } else {
+                //trashItToast(text = "Altere alguma informação", context= context )
+            }
         }
     }
 
@@ -114,6 +145,32 @@ class ContaViewModel(val context: Context): ViewModel() {
 
     fun toggleAlterarSenha() {
         _abrirAlterarSenha.update { _abrirAlterarSenha.value.not() }
+    }
+
+     fun refreshView(){
+        val callUsuario: Call<UsuarioAPI> = RetrofitFactory().getTrashItService().getUsuarioById(1)
+        val callEndereco:Call<EnderecoAPI> = RetrofitFactory().getTrashItService().getEnderecoById(1)
+        callUsuario.enqueue(object: Callback<UsuarioAPI>{
+            override fun onResponse(call: Call<UsuarioAPI>, response: Response<UsuarioAPI>) {
+                _usuario.update { response.body()!!}
+            }
+
+            override fun onFailure(call: Call<UsuarioAPI>, t: Throwable) {
+                Log.d("TESTE API", "onResponse: ${t.message}")
+            }
+
+        })
+         callEndereco.enqueue(object : Callback<EnderecoAPI> {
+             override fun onResponse(call: Call<EnderecoAPI>, response: Response<EnderecoAPI>) {
+                 _endereco.update { response.body()!! }
+             }
+
+             override fun onFailure(call: Call<EnderecoAPI>, t: Throwable) {
+                 Log.d("TESTE API", "onResponse: ${t.message}")
+             }
+
+         })
+
     }
 
 
