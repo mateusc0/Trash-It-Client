@@ -11,7 +11,9 @@ import androidx.core.app.NotificationCompat
 import androidx.lifecycle.ViewModel
 import br.com.fiap.trashit.R
 import br.com.fiap.trashit.model.Coleta
+import br.com.fiap.trashit.model.ColetaAPI
 import br.com.fiap.trashit.model.Endereco
+import br.com.fiap.trashit.model.EnderecoAPI
 import br.com.fiap.trashit.model.Lixeira
 import br.com.fiap.trashit.model.Usuario
 import br.com.fiap.trashit.model.UsuarioAPI
@@ -161,7 +163,35 @@ class LixeiraViewModel(val context: Context): ViewModel() {
             )}
             makeNotification()
         }
-        var call:Call<UsuarioAPI> = RetrofitFactory().getTrashItService().getUsuarioById(1)
+        val coleta: ColetaAPI = ColetaAPI(id = 2, lixeira = _endereco.value.lixeira)
+        val lixeira2:Lixeira =  Lixeira(temOrganico = true, temMetal = true)
+        val enderecoAPI: EnderecoAPI = EnderecoAPI(id = 1, cep = "09211111",
+        numero = "111",
+        rua = "Rua Exemplo",
+        complemento = "",
+        bairro = "Bairro Exemplo",
+        cidade = "cidade",
+        uf= "SP",
+        lixeira = lixeira2,
+        )
+        val usuarioAPI: UsuarioAPI = UsuarioAPI(
+            id = 1,
+            nomeCompleto = "Seu Nome",
+            cpf = "00000000000",
+            email = "seuEmail@email.com",
+            celular = "11922222222",
+            senha = "senha"
+        )
+
+        val call:Call<UsuarioAPI> = RetrofitFactory().getTrashItService().getUsuarioById(1)
+        val call1:Call<EnderecoAPI> = RetrofitFactory().getTrashItService().getEnderecoById(1)
+        val call2:Call<List<ColetaAPI>> = RetrofitFactory().getTrashItService().getColetasByEnderecoId(1)
+        //val call3:Call<ColetaAPI> = RetrofitFactory().getTrashItService().saveColeta(idEndereco = 1, coleta = coleta)
+        //val call4:Call<EnderecoAPI> = RetrofitFactory().getTrashItService().updateEndereco(id = 1, endereco = enderecoAPI )
+        val call5: Call<UsuarioAPI> = RetrofitFactory().getTrashItService().updateUsuario(id = 1, usuario = usuarioAPI)
+        val call6: Call<UsuarioAPI> = RetrofitFactory().getTrashItService()
+            .getUsuarioByEmailESenha(email = "seuEmail@email.com", senha = "senha")
+
         call.enqueue(object: Callback<UsuarioAPI>{
             override fun onResponse(call: Call<UsuarioAPI>, response: Response<UsuarioAPI>) {
                 Log.d("TESTE API", "onResponse: ${response.body()}")
@@ -172,6 +202,75 @@ class LixeiraViewModel(val context: Context): ViewModel() {
             }
 
         })
+
+        call1.enqueue(object : Callback<EnderecoAPI> {
+            override fun onResponse(call: Call<EnderecoAPI>, response: Response<EnderecoAPI>) {
+                Log.d("TESTE API", "onResponse: ${response.body()}")
+            }
+
+            override fun onFailure(call: Call<EnderecoAPI>, t: Throwable) {
+                Log.d("TESTE API", "onResponse: ${t.message}")
+            }
+
+        })
+
+        call2.enqueue(object : Callback<List<ColetaAPI>> {
+            override fun onResponse(
+                call: Call<List<ColetaAPI>>,
+                response: Response<List<ColetaAPI>>,
+            ) {
+                Log.d("TESTE API", "onResponse: ${response.body()}")
+            }
+
+            override fun onFailure(call: Call<List<ColetaAPI>>, t: Throwable) {
+                Log.d("TESTE API", "onResponse: ${t.message}")
+            }
+
+        })
+
+        /*call3.enqueue(object : Callback<ColetaAPI>{
+            override fun onResponse(call: Call<ColetaAPI>, response: Response<ColetaAPI>) {
+                Log.d("TESTE2 API", "onResponse: ${response.body()}")
+            }
+
+            override fun onFailure(call: Call<ColetaAPI>, t: Throwable) {
+                Log.d("TESTE2 API", "onResponse: ${t.message}")
+            }
+
+        })*/
+
+        /*call4.enqueue(object : Callback<EnderecoAPI>{
+            override fun onResponse(call: Call<EnderecoAPI>, response: Response<EnderecoAPI>) {
+                Log.d("TESTE API ENDERECO", "onResponse: ${response.body()}")
+            }
+
+            override fun onFailure(call: Call<EnderecoAPI>, t: Throwable) {
+                Log.d("TESTE API", "onResponse: ${t.message}")
+            }
+
+        })*/
+
+        call5.enqueue( object : Callback<UsuarioAPI> {
+            override fun onResponse(call: Call<UsuarioAPI>, response: Response<UsuarioAPI>) {
+                Log.d("TESTE API USUARIO UPDATE", "onResponse: ${response.body()}")
+            }
+
+            override fun onFailure(call: Call<UsuarioAPI>, t: Throwable) {
+                Log.d("TESTEAPI USUARIO UPDATE", "onResponse: ${t.message}")
+            }
+
+        })
+        call6.enqueue( object  : Callback<UsuarioAPI> {
+            override fun onResponse(call: Call<UsuarioAPI>, response: Response<UsuarioAPI>) {
+                Log.d("TESTE API USUARIO", "onResponse: ${response.body()}")
+            }
+
+            override fun onFailure(call: Call<UsuarioAPI>, t: Throwable) {
+                Log.d("TESTEAPI USUARIO", "onResponse: ${t.message}")
+            }
+
+        })
+
 
 
     }
