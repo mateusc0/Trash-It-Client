@@ -1,6 +1,8 @@
 package br.com.fiap.trashit.view
 
 import android.annotation.SuppressLint
+import android.app.Application
+import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -41,7 +43,7 @@ import kotlinx.coroutines.launch
 
 @SuppressLint("StateFlowValueCalledInComposition")
 @Composable
-fun LixeiraScreen(viewModel: LixeiraViewModel, navController: NavController) {
+fun LixeiraScreen(context: Context ,viewModel: LixeiraViewModel, navController: NavController) {
     val uiState by viewModel.uiState.collectAsState()
     if (viewModel.endereco.value.id == 0L) { viewModel.refreshView() }
     val alert: String
@@ -161,6 +163,15 @@ fun LixeiraScreen(viewModel: LixeiraViewModel, navController: NavController) {
             shape = RoundedCornerShape(24.dp),
             onClick = {
                 viewModel.alterarLixeira(toastText = toastText)
+                trashItToast(text = if (
+                            uiState.temPlastico ||
+                            uiState.temPapel ||
+                            uiState.temMetal ||
+                            uiState.temVidro ||
+                            uiState.temOrganico
+                    ) toastText
+                    else "Lixeira está vazia",
+                    context = context)
 
                 if (uiState.precisaColeta.not()) {
                     GlobalScope.launch {

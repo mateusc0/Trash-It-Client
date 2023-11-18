@@ -159,6 +159,7 @@ class MainActivity : ComponentActivity() {
                                 navController = navController
                             )}
                             composable(route = BottomNavItem.Lixeira.screenRoute){ LixeiraScreen(
+                                context = applicationContext,
                                 viewModel = LixeiraViewModel(context = applicationContext),
                                 navController = navController
                             )}
