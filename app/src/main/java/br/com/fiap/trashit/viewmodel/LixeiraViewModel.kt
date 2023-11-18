@@ -1,28 +1,31 @@
 package br.com.fiap.trashit.viewmodel
 
-import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
-import androidx.compose.ui.graphics.Color
+import android.util.Log
 import androidx.core.app.NotificationCompat
-import androidx.core.content.ContextCompat.getSystemService
-import androidx.core.content.getSystemService
 import androidx.lifecycle.ViewModel
 import br.com.fiap.trashit.R
 import br.com.fiap.trashit.model.Coleta
 import br.com.fiap.trashit.model.Endereco
 import br.com.fiap.trashit.model.Lixeira
+import br.com.fiap.trashit.model.Usuario
+import br.com.fiap.trashit.model.UsuarioAPI
 import br.com.fiap.trashit.service.database.repository.ColetaRepository
 import br.com.fiap.trashit.service.database.repository.EnderecoRepository
+import br.com.fiap.trashit.service.trashItService.RetrofitFactory
 import br.com.fiap.trashit.view.components.trashItToast
 import br.com.fiap.trashit.viewmodel.uiState.LixeiraUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class LixeiraViewModel(val context: Context): ViewModel() {
     private val enderecoRepository = EnderecoRepository(context)
@@ -158,6 +161,18 @@ class LixeiraViewModel(val context: Context): ViewModel() {
             )}
             makeNotification()
         }
+        var call:Call<UsuarioAPI> = RetrofitFactory().getTrashItService().getUsuarioById(1)
+        call.enqueue(object: Callback<UsuarioAPI>{
+            override fun onResponse(call: Call<UsuarioAPI>, response: Response<UsuarioAPI>) {
+                Log.d("TESTE API", "onResponse: ${response.body()}")
+            }
+
+            override fun onFailure(call: Call<UsuarioAPI>, t: Throwable) {
+                Log.d("TESTE API", "onResponse: ${t.message}")
+            }
+
+        })
+
 
     }
 
