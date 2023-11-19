@@ -4,12 +4,9 @@ import android.content.Context
 import android.util.Log
 import android.util.Patterns
 import androidx.lifecycle.ViewModel
-import br.com.fiap.trashit.model.EnderecoAPI
-import br.com.fiap.trashit.model.UsuarioAPI
-import br.com.fiap.trashit.service.database.repository.EnderecoRepository
-import br.com.fiap.trashit.service.database.repository.UsuarioRepository
+import br.com.fiap.trashit.model.Endereco
+import br.com.fiap.trashit.model.Usuario
 import br.com.fiap.trashit.service.trashItService.RetrofitFactory
-import br.com.fiap.trashit.view.components.trashItToast
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,24 +19,24 @@ import retrofit2.Response
 class ContaViewModel(val context: Context): ViewModel() {
 
     val emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\$".toRegex()
-    private var _usuario = MutableStateFlow<UsuarioAPI>(
-        UsuarioAPI()
+    private var _usuario = MutableStateFlow<Usuario>(
+        Usuario()
     )
 
-    val usuario: StateFlow<UsuarioAPI>
+    val usuario: StateFlow<Usuario>
         get() = _usuario
 
-    private var _usuarioPast = MutableStateFlow<UsuarioAPI>(
-        UsuarioAPI()
+    private var _usuarioPast = MutableStateFlow<Usuario>(
+        Usuario()
     )
 
-    val usuarioPast: StateFlow<UsuarioAPI>
+    val usuarioPast: StateFlow<Usuario>
         get() = _usuarioPast
 
-    private var _endereco = MutableStateFlow<EnderecoAPI>(
-        EnderecoAPI()
+    private var _endereco = MutableStateFlow<Endereco>(
+        Endereco()
     )
-    val endereco: StateFlow<EnderecoAPI>
+    val endereco: StateFlow<Endereco>
         get() = _endereco
 
     private var _emailError = MutableStateFlow<Boolean>(false)
@@ -100,18 +97,17 @@ class ContaViewModel(val context: Context): ViewModel() {
                 RetrofitFactory().getTrashItService().updateUsuario(
                     _usuario.value.id,
                     _usuario.value
-                ).enqueue(object : Callback<UsuarioAPI> {
+                ).enqueue(object : Callback<Usuario> {
                     override fun onResponse(
-                        call: Call<UsuarioAPI>,
-                        response: Response<UsuarioAPI>,
+                        call: Call<Usuario>,
+                        response: Response<Usuario>,
                     ) {
                         _usuario.update { response.body()!! }
                     }
 
-                    override fun onFailure(call: Call<UsuarioAPI>, t: Throwable) {
+                    override fun onFailure(call: Call<Usuario>, t: Throwable) {
                         Log.d("TRASHIT - ERROR", "Menssagem: Verifique se o serviço foi" +
                                 " iniciado ou está rodando adequadamente")
-                        System.exit(0)
                     }
 
                 })
@@ -148,30 +144,28 @@ class ContaViewModel(val context: Context): ViewModel() {
     }
 
      fun refreshView(){
-        val callUsuario: Call<UsuarioAPI> = RetrofitFactory().getTrashItService().getUsuarioById(1)
-        val callEndereco:Call<EnderecoAPI> = RetrofitFactory().getTrashItService().getEnderecoById(1)
-        callUsuario.enqueue(object: Callback<UsuarioAPI>{
-            override fun onResponse(call: Call<UsuarioAPI>, response: Response<UsuarioAPI>) {
+        val callUsuario: Call<Usuario> = RetrofitFactory().getTrashItService().getUsuarioById(1)
+        val callEndereco:Call<Endereco> = RetrofitFactory().getTrashItService().getEnderecoById(1)
+        callUsuario.enqueue(object: Callback<Usuario>{
+            override fun onResponse(call: Call<Usuario>, response: Response<Usuario>) {
                 _usuario.update { response.body()!!}
                 _usuarioPast.update { response.body()!! }
             }
 
-            override fun onFailure(call: Call<UsuarioAPI>, t: Throwable) {
+            override fun onFailure(call: Call<Usuario>, t: Throwable) {
                 Log.d("TRASHIT - ERROR", "Menssagem: Verifique se o serviço foi" +
                         " iniciado ou está rodando adequadamente")
-                System.exit(0)
             }
 
         })
-         callEndereco.enqueue(object : Callback<EnderecoAPI> {
-             override fun onResponse(call: Call<EnderecoAPI>, response: Response<EnderecoAPI>) {
+         callEndereco.enqueue(object : Callback<Endereco> {
+             override fun onResponse(call: Call<Endereco>, response: Response<Endereco>) {
                  _endereco.update { response.body()!! }
              }
 
-             override fun onFailure(call: Call<EnderecoAPI>, t: Throwable) {
+             override fun onFailure(call: Call<Endereco>, t: Throwable) {
                  Log.d("TRASHIT - ERROR", "Menssagem: Verifique se o serviço foi" +
                          " iniciado ou está rodando adequadamente")
-                 System.exit(0)
              }
 
          })

@@ -37,7 +37,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import br.com.fiap.trashit.service.database.repository.UsuarioRepository
 import br.com.fiap.trashit.ui.theme.TrashItTheme
 import br.com.fiap.trashit.view.ColetasScreen
 import br.com.fiap.trashit.view.LixeiraScreen
@@ -125,15 +124,6 @@ class MainActivity : ComponentActivity() {
                             NotificationAlert(context = this, launcher = launcher)
                         }
                     }
-
-                    val usuarioRepository = UsuarioRepository(applicationContext)
-                    /*val isLogged = if(usuarioRepository
-                        .listarUsuariosEndereco(1)
-                        .isEmpty()) {
-                            false
-                    } else {
-                        usuarioRepository.buscarUsuarioPorId(1).isLogged
-                    }*/
 
                     val startDestination = "login"
                         /*if(isLogged) BottomNavItem.Lixeira.screenRoute

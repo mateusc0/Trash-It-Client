@@ -10,17 +10,13 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.ViewModel
 import br.com.fiap.trashit.R
-import br.com.fiap.trashit.model.ColetaAPI
-import br.com.fiap.trashit.model.EnderecoAPI
+import br.com.fiap.trashit.model.Coleta
+import br.com.fiap.trashit.model.Endereco
 import br.com.fiap.trashit.model.Lixeira
-import br.com.fiap.trashit.model.UsuarioAPI
-import br.com.fiap.trashit.service.database.repository.ColetaRepository
-import br.com.fiap.trashit.service.database.repository.EnderecoRepository
+import br.com.fiap.trashit.model.Usuario
 import br.com.fiap.trashit.service.trashItService.RetrofitFactory
-import br.com.fiap.trashit.view.components.trashItToast
 import br.com.fiap.trashit.viewmodel.uiState.LixeiraUiState
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -30,9 +26,9 @@ import retrofit2.Callback
 import retrofit2.Response
 
 class LixeiraViewModel(val context: Context): ViewModel() {
-    private var _endereco = MutableStateFlow<EnderecoAPI>(EnderecoAPI())
+    private var _endereco = MutableStateFlow<Endereco>(Endereco())
 
-    val endereco: StateFlow<EnderecoAPI>
+    val endereco: StateFlow<Endereco>
         get() = _endereco
 
     private val _uiState = MutableStateFlow<LixeiraUiState>(LixeiraUiState(
@@ -72,10 +68,10 @@ class LixeiraViewModel(val context: Context): ViewModel() {
                 uiState.value.temVidro ||
                 uiState.value.temOrganico
             ) {*/
-                val call4:Call<EnderecoAPI> = RetrofitFactory()
+                val call4:Call<Endereco> = RetrofitFactory()
                     .getTrashItService().updateEndereco(id = 1, endereco = enderecoAtt )
-                call4.enqueue(object : Callback<EnderecoAPI>{
-                    override fun onResponse(call: Call<EnderecoAPI>, response: Response<EnderecoAPI>) {
+                call4.enqueue(object : Callback<Endereco>{
+                    override fun onResponse(call: Call<Endereco>, response: Response<Endereco>) {
                         _endereco.update { response.body()!! }
                         _uiState.update { LixeiraUiState(
                             temPlastico = _endereco.value.lixeira.temPlastico,
@@ -87,10 +83,9 @@ class LixeiraViewModel(val context: Context): ViewModel() {
                         ) }
                     }
 
-                    override fun onFailure(call: Call<EnderecoAPI>, t: Throwable) {
+                    override fun onFailure(call: Call<Endereco>, t: Throwable) {
                         Log.d("TRASHIT - ERROR", "Menssagem: Verifique se o serviço foi" +
                                 " iniciado ou está rodando adequadamente")
-                        System.exit(0)
                     }
 
                 })
@@ -137,29 +132,28 @@ class LixeiraViewModel(val context: Context): ViewModel() {
                         uiState.value.temVidro ||
                         uiState.value.temOrganico
                 )){
-                val coleta = ColetaAPI(
+                val coleta = Coleta(
                     id = 0,
                     lixeira = _endereco.value.lixeira
                 )
-                val callColeta:Call<ColetaAPI> = RetrofitFactory()
+                val callColeta:Call<Coleta> = RetrofitFactory()
                     .getTrashItService().saveColeta(idEndereco = 1, coleta = coleta)
-                val callEndereco:Call<EnderecoAPI> = RetrofitFactory()
+                val callEndereco:Call<Endereco> = RetrofitFactory()
                     .getTrashItService()
                     .updateEndereco(id = 1, endereco = _endereco.value.copy(lixeira = Lixeira()))
-                callColeta.enqueue(object : Callback<ColetaAPI>{
-                    override fun onResponse(call: Call<ColetaAPI>, response: Response<ColetaAPI>) {
+                callColeta.enqueue(object : Callback<Coleta>{
+                    override fun onResponse(call: Call<Coleta>, response: Response<Coleta>) {
                         Log.d("TESTE COLETA API", "onResponse: SUCCESS!!!")
                     }
 
-                    override fun onFailure(call: Call<ColetaAPI>, t: Throwable) {
+                    override fun onFailure(call: Call<Coleta>, t: Throwable) {
                         Log.d("TRASHIT - ERROR", "Menssagem: Verifique se o serviço foi" +
                                 " iniciado ou está rodando adequadamente")
-                        System.exit(0)
                     }
 
                 })
-                callEndereco.enqueue(object : Callback<EnderecoAPI>{
-                    override fun onResponse(call: Call<EnderecoAPI>, response: Response<EnderecoAPI>) {
+                callEndereco.enqueue(object : Callback<Endereco>{
+                    override fun onResponse(call: Call<Endereco>, response: Response<Endereco>) {
                         _endereco.update { response.body()!! }
                         _uiState.update { LixeiraUiState(
                             temPlastico = _endereco.value.lixeira.temPlastico,
@@ -171,16 +165,16 @@ class LixeiraViewModel(val context: Context): ViewModel() {
                         )}
                     }
 
-                    override fun onFailure(call: Call<EnderecoAPI>, t: Throwable) {
+                    override fun onFailure(call: Call<Endereco>, t: Throwable) {
                         Log.d("TESTE API ENDERECO", "onResponse: ${t.message}")
                     }
                 })
                 makeNotification()
             }
         }
-        val coleta: ColetaAPI = ColetaAPI(id = 2, lixeira = _endereco.value.lixeira)
+        val coleta: Coleta = Coleta(id = 2, lixeira = _endereco.value.lixeira)
         val lixeira2:Lixeira =  Lixeira(temOrganico = true, temMetal = true)
-        val enderecoAPI: EnderecoAPI = EnderecoAPI(id = 1, cep = "09211111",
+        val enderecoAPI: Endereco = Endereco(id = 1, cep = "09211111",
         numero = "111",
         rua = "Rua Exemplo",
         complemento = "",
@@ -189,7 +183,7 @@ class LixeiraViewModel(val context: Context): ViewModel() {
         uf= "SP",
         lixeira = lixeira2,
         )
-        val usuarioAPI: UsuarioAPI = UsuarioAPI(
+        val usuarioAPI: Usuario = Usuario(
             id = 1,
             nomeCompleto = "Seu Nome",
             cpf = "00000000000",
@@ -242,10 +236,10 @@ class LixeiraViewModel(val context: Context): ViewModel() {
     }
 
     fun refreshView() {
-        val callEndereco:Call<EnderecoAPI> = RetrofitFactory()
+        val callEndereco:Call<Endereco> = RetrofitFactory()
             .getTrashItService().getEnderecoById(1)
-        callEndereco.enqueue(object : Callback<EnderecoAPI> {
-            override fun onResponse(call: Call<EnderecoAPI>, response: Response<EnderecoAPI>) {
+        callEndereco.enqueue(object : Callback<Endereco> {
+            override fun onResponse(call: Call<Endereco>, response: Response<Endereco>) {
                 _endereco.update { response.body()!! }
                 _uiState.update { LixeiraUiState(
                     temPlastico = _endereco.value.lixeira.temPlastico,
@@ -257,10 +251,9 @@ class LixeiraViewModel(val context: Context): ViewModel() {
                 )}
             }
 
-            override fun onFailure(call: Call<EnderecoAPI>, t: Throwable) {
+            override fun onFailure(call: Call<Endereco>, t: Throwable) {
                 Log.d("TRASHIT - ERROR", "Menssagem: Verifique se o serviço foi" +
                         " iniciado ou está rodando adequadamente")
-                System.exit(0)
             }
 
         })
