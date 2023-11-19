@@ -2,6 +2,7 @@ package br.com.fiap.trashit.view
 
 import android.annotation.SuppressLint
 import android.telephony.PhoneNumberUtils
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -54,6 +55,7 @@ import androidx.navigation.NavController
 import br.com.fiap.trashit.R
 import br.com.fiap.trashit.view.components.ScreenLabel
 import br.com.fiap.trashit.view.components.UserInputTextField
+import br.com.fiap.trashit.view.components.trashItToast
 import br.com.fiap.trashit.viewmodel.ContaViewModel
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -71,6 +73,8 @@ fun ContaScreen(viewModel: ContaViewModel, navController: NavController) {
         val abrirAlterarSenha by viewModel.abrirAlterarSenha.collectAsState()
 
         val context = LocalContext.current
+
+
 
         if (abrirAlterarSenha){
                 AlterarSenhaDialog(viewModel = viewModel)
@@ -266,7 +270,24 @@ fun ContaScreen(viewModel: ContaViewModel, navController: NavController) {
                                 color = colorResource(id = R.color.trashIt_green),
                                 modifier = Modifier.width(140.dp)
                         ) {
-                                viewModel.updateUsuario()
+                                viewModel.emailErrorCheck()
+                                viewModel.celularErrorCheck()
+                                Log.d("LOLLLL", viewModel.emailError.value .toString())
+                                Log.d("LOLLLL", viewModel.celularError.value.toString())
+                                if ( !viewModel.emailError.value && !viewModel.celularError.value ) {
+                                        if ( viewModel.usuario.value == viewModel.usuarioPast.value) {
+                                                trashItToast(
+                                                        text = "Altere alguma informação",
+                                                        context = context
+                                                )
+                                        }else{
+                                                viewModel.updateUsuario()
+                                                trashItToast(
+                                                        text = "Usuário atualizado",
+                                                        context = context
+                                                )
+                                        }
+                                }
                         }
                         Spacer(modifier = Modifier.width(20.dp))
                         SpecialButtons(

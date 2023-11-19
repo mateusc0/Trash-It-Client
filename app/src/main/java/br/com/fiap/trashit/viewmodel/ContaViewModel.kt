@@ -32,6 +32,13 @@ class ContaViewModel(val context: Context): ViewModel() {
     val usuario: StateFlow<UsuarioAPI>
         get() = _usuario
 
+    private var _usuarioPast = MutableStateFlow<UsuarioAPI>(
+        UsuarioAPI()
+    )
+
+    val usuarioPast: StateFlow<UsuarioAPI>
+        get() = _usuarioPast
+
     private var _endereco = MutableStateFlow<EnderecoAPI>(
         EnderecoAPI()
     )
@@ -53,7 +60,6 @@ class ContaViewModel(val context: Context): ViewModel() {
     private var _abrirAlterarSenha = MutableStateFlow<Boolean>(false)
     val abrirAlterarSenha: StateFlow<Boolean>
         get() = _abrirAlterarSenha
-
 
     fun updateEmail(email: String):Unit {
         _usuario.update { currentState ->
@@ -91,16 +97,18 @@ class ContaViewModel(val context: Context): ViewModel() {
         GlobalScope.launch {
             emailErrorCheck()
             celularErrorCheck()
-            if ( !_emailError.value
-                && !_celularError.value
-            ) {
-                RetrofitFactory().getTrashItService().updateUsuario(_usuario.value.id,
-                    _usuario.value).enqueue( object : Callback<UsuarioAPI> {
+            if ( !_emailError.value && !_celularError.value &&
+                (_usuarioPast.value != _usuario.value)) {
+                Log.d("TESTING ALLL", (_usuarioPast != _usuario).toString())
+                RetrofitFactory().getTrashItService().updateUsuario(
+                    _usuario.value.id,
+                    _usuario.value
+                ).enqueue(object : Callback<UsuarioAPI> {
                     override fun onResponse(
                         call: Call<UsuarioAPI>,
                         response: Response<UsuarioAPI>,
                     ) {
-                        _usuario.update { response.body()!!}
+                        _usuario.update { response.body()!! }
                     }
 
                     override fun onFailure(call: Call<UsuarioAPI>, t: Throwable) {
@@ -111,14 +119,11 @@ class ContaViewModel(val context: Context): ViewModel() {
                 _usuario.update {
                     RetrofitFactory().getTrashItService().getUsuarioById(1).execute().body()!!
                 }
-                //trashItToast(text = "Usuário atualizado", context = context)
-            } else {
-                //trashItToast(text = "Altere alguma informação", context= context )
             }
         }
     }
 
-    private fun emailErrorCheck() {
+    fun emailErrorCheck() {
         if (Patterns.EMAIL_ADDRESS.matcher(_usuario.value.email).matches() ||
                 _usuario.value.email.isEmpty()){
             _emailError.update { false }
@@ -127,7 +132,7 @@ class ContaViewModel(val context: Context): ViewModel() {
         }
     }
 
-    private fun celularErrorCheck() {
+    fun celularErrorCheck() {
         if (_usuario.value.celular.length == 11){
             _celularError.update { false }
         } else {
@@ -149,6 +154,7 @@ class ContaViewModel(val context: Context): ViewModel() {
         callUsuario.enqueue(object: Callback<UsuarioAPI>{
             override fun onResponse(call: Call<UsuarioAPI>, response: Response<UsuarioAPI>) {
                 _usuario.update { response.body()!!}
+                _usuarioPast.update { response.body()!! }
             }
 
             override fun onFailure(call: Call<UsuarioAPI>, t: Throwable) {
