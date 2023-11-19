@@ -1,6 +1,7 @@
 package br.com.fiap.trashit.view
 
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -47,9 +48,9 @@ import java.util.Date
 @Composable
 fun ColetasScreen(viewModel: ColetasViewModel, navController: NavController) {
         val listaColetas by viewModel.listaColetas.collectAsState()
+        GlobalScope.launch{viewModel.refreshView()}
         val simpleDateFormat: SimpleDateFormat = SimpleDateFormat("dd/MM/yyyy")
         val simpleTimeFormat: SimpleDateFormat = SimpleDateFormat("HH:mm")
-        if (viewModel.refreshed == false) { GlobalScope.launch{viewModel.refreshView() }}
 
         Box(modifier = Modifier
                 .fillMaxSize()

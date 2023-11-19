@@ -14,7 +14,6 @@ import retrofit2.Callback
 import retrofit2.Response
 
 class ColetasViewModel(context: Context): ViewModel() {
-    private val coletaRepository = ColetaRepository(context)
     var refreshed: Boolean = false;
 
     private var _listaColetas = MutableStateFlow<List<ColetaAPI>>(
@@ -30,13 +29,14 @@ class ColetasViewModel(context: Context): ViewModel() {
                 call: Call<List<ColetaAPI>>,
                 response: Response<List<ColetaAPI>>,
             ) {
-                Log.d("TESTE API", "onResponse: ${response.body()}")
                 _listaColetas.update { response.body()!! }
                 refreshed = true
             }
 
             override fun onFailure(call: Call<List<ColetaAPI>>, t: Throwable) {
-                Log.d("TESTE API", "onResponse: ${t.message}")
+                Log.d("TRASHIT - ERROR", "Menssagem: Verifique se o serviço foi" +
+                        " iniciado ou está rodando adequadamente")
+                System.exit(0)
             }
 
         })

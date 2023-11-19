@@ -21,8 +21,6 @@ import retrofit2.Callback
 import retrofit2.Response
 
 class LoginViewModel(context: Context): ViewModel() {
-    private val enderecoRepository = EnderecoRepository(context)
-    private val usuarioRepository = UsuarioRepository(context)
     private val _usuario = MutableStateFlow<UsuarioAPI>(UsuarioAPI())
     val usuario: StateFlow<UsuarioAPI>
         get() = _usuario
@@ -40,7 +38,10 @@ class LoginViewModel(context: Context): ViewModel() {
             }
 
             override fun onFailure(call: Call<UsuarioAPI>, t: Throwable) {
-                Log.d("TESTE API LOGIN", "onResponse: ${t.message}")            }
+                Log.d("TRASHIT - ERROR", "Menssagem: Verifique se o serviço foi" +
+                        " iniciado ou está rodando adequadamente")
+                System.exit(0)
+            }
 
         })
     }

@@ -22,9 +22,6 @@ import retrofit2.Response
 class ContaViewModel(val context: Context): ViewModel() {
 
     val emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\$".toRegex()
-    private val enderecoRepository = EnderecoRepository(context)
-    private val usuarioRepository = UsuarioRepository(context)
-
     private var _usuario = MutableStateFlow<UsuarioAPI>(
         UsuarioAPI()
     )
@@ -112,7 +109,9 @@ class ContaViewModel(val context: Context): ViewModel() {
                     }
 
                     override fun onFailure(call: Call<UsuarioAPI>, t: Throwable) {
-                        Log.d("TESTE API", "onResponse: ${t.message}")
+                        Log.d("TRASHIT - ERROR", "Menssagem: Verifique se o serviço foi" +
+                                " iniciado ou está rodando adequadamente")
+                        System.exit(0)
                     }
 
                 })
@@ -158,7 +157,9 @@ class ContaViewModel(val context: Context): ViewModel() {
             }
 
             override fun onFailure(call: Call<UsuarioAPI>, t: Throwable) {
-                Log.d("TESTE API", "onResponse: ${t.message}")
+                Log.d("TRASHIT - ERROR", "Menssagem: Verifique se o serviço foi" +
+                        " iniciado ou está rodando adequadamente")
+                System.exit(0)
             }
 
         })
@@ -168,7 +169,9 @@ class ContaViewModel(val context: Context): ViewModel() {
              }
 
              override fun onFailure(call: Call<EnderecoAPI>, t: Throwable) {
-                 Log.d("TESTE API", "onResponse: ${t.message}")
+                 Log.d("TRASHIT - ERROR", "Menssagem: Verifique se o serviço foi" +
+                         " iniciado ou está rodando adequadamente")
+                 System.exit(0)
              }
 
          })
