@@ -135,7 +135,7 @@ fun CardColeta(
                                      tint = colorResource(id = R.color.trashIt_green)
                              )
                      }
-                     Row(modifier = Modifier.padding(vertical = 10.dp, horizontal = 15.dp)) {
+                     Row(modifier = Modifier.padding(vertical = 10.dp, horizontal = 10.dp)) {
                              MaterialLabel(
                                      materialBoolean = lixeira.temPlastico,
                                      materialColor = colorResource(id = R.color.plastic_red),
